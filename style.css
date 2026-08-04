@@ -1,0 +1,419 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+}
+
+body {
+    background: #0a0a0a;
+    color: #d4d4d4;
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+}
+
+/* ---------- SIDEBAR (hover expand) – pure monochrome ---------- */
+.sidebar {
+    width: 55px;
+    background: #111111;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem 0.6rem;
+    gap: 1.5rem;
+    transition: width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    overflow: hidden;
+    white-space: nowrap;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    flex-shrink: 0;
+    z-index: 3000;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.8);
+}
+
+.sidebar:hover {
+    width: 180px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    color: #b0b0b0;
+    font-weight: 500;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.nav-item i {
+    font-size: 1.4rem;
+    min-width: 28px;
+    text-align: center;
+    transition: transform 0.2s;
+    color: #cfcfcf;
+}
+
+.nav-item span {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.sidebar:hover .nav-item span {
+    opacity: 1;
+}
+
+.nav-item:hover {
+    background: #1f1f1f;
+    color: white;
+}
+
+.nav-item:hover i {
+    color: white;
+}
+
+/* ---------- MAIN (list / home) ---------- */
+.main-content {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+    height: 100vh;
+    background: #0a0a0a;
+    margin-left: 55px;
+    width: calc(100vw - 55px);
+    transition: margin-left 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1), width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.main-content.compacted {
+    margin-left: 180px;
+    width: calc(100vw - 180px);
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #eaeaea;
+    letter-spacing: -0.5px;
+}
+
+.section-title i {
+    color: #aaa;
+}
+
+/* ---------- GAMES GRID (text-only tiles) ---------- */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.game-tile {
+    background: #151515;
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.2s ease;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+    min-height: 80px;
+}
+
+.game-tile:hover {
+    background: #1e1e1e;
+    transform: translateY(-5px);
+    border-color: #5a5a5a;
+    box-shadow: 0 14px 24px rgba(0,0,0,0.8);
+}
+
+.game-title-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #e0e0e0;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.game-tile:hover .game-title-text {
+    color: white;
+}
+
+/* ---------- FULL SCREEN GAME VIEW (new screen) ---------- */
+.game-screen {
+    position: fixed;
+    top: 0;
+    left: 60px;
+    width: calc(100vw - 60px);
+    height: 100vh;
+    background: #0a0a0a;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 1.5rem 2rem;
+    overflow: hidden;
+    transition: left 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1), width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.sidebar:hover ~ .game-screen,
+.game-screen.sidebar-expanded {
+    left: 180px;
+    width: calc(100vw - 180px);
+}
+
+.game-screen.active {
+    display: flex;
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 1rem;
+}
+
+.game-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #f0f0f0;
+    letter-spacing: -0.5px;
+    background: none;
+    -webkit-text-fill-color: #f0f0f0;
+}
+
+.game-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.fullscreen-btn, .back-btn {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    color: #ddd;
+    padding: 10px 22px;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.fullscreen-btn:hover, .back-btn:hover {
+    background: #2a2a2a;
+    border-color: #5a5a5a;
+    color: white;
+}
+
+.iframe-container {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid #2a2a2a;
+    min-height: 0;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.iframe-container:fullscreen {
+    border-radius: 0;
+    border: none;
+}
+
+.iframe-container:fullscreen iframe {
+    height: 100vh;
+    width: 100vw;
+}
+
+.search-placeholder {
+    background: #111;
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #555;
+    border: 1px dashed #2a2a2a;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* responsive */
+@media (max-width: 700px) {
+    .main-content {
+        padding: 1.2rem;
+        margin-left: 55px;
+        width: calc(100vw - 55px);
+    }
+    .main-content.compacted {
+        margin-left: 160px;
+        width: calc(100vw - 160px);
+    }
+    .sidebar:hover {
+        width: 160px;
+    }
+    .game-screen {
+        left: 60px;
+        width: calc(100vw - 60px);
+        padding: 1rem;
+    }
+    .sidebar:hover ~ .game-screen,
+    .game-screen.sidebar-expanded {
+        left: 160px;
+        width: calc(100vw - 160px);
+    }
+}
+
+/* SEARCH BAR */
+.search-bar {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    background: #151515;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    color: #e0e0e0;
+    margin-bottom: 1.5rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-bar:focus {
+    border-color: #5a5a5a;
+}
+
+.search-bar::placeholder {
+    color: #666;
+}
+
+/* PRIVATE SCREEN */
+.private-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: #111;
+    transition: opacity 0.5s ease;
+}
+
+.private-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.private-screen .padlock-icon {
+    font-size: 5rem;
+    color: #333;
+}
+
+.private-screen h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.private-screen p {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+/* WELCOME SCREEN */
+.welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0a0a0a;
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.welcome-screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.welcome-screen h1 {
+    font-size: 3rem;
+    color: #e0e0e0;
+    letter-spacing: -1px;
+}
+
+/* SEARCH SECTION IFRAME – FULL PAGE (besides sidebar) */
+.search-iframe-container {
+    position: fixed;
+    top: 0;
+    left: 55px;
+    width: calc(100vw - 55px);
+    height: 100vh;
+    background: #000;
+    z-index: 100;
+    transition: left 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1), width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.search-iframe-container.compacted {
+    left: 180px;
+    width: calc(100vw - 180px);
+}
+
+.search-iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
