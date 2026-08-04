@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONO</title>
+    <!-- Font Awesome for icons (monochrome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- External stylesheet in the same directory -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== NEW: PRIVATE SCREEN ===== -->
+    <div id="privateScreen" class="private-screen">
+        <i class="fa-solid fa-lock padlock-icon"></i>
+        <h1>This app is private.</h1>
+        <p>This app is only available for authorised users.</p>
+    </div>
+
+    <!-- ===== NEW: WELCOME SCREEN ===== -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <h1>Welcome back, Aiden.</h1>
+    </div>
+
+    <!-- SIDEBAR (monochrome) -->
+    <aside class="sidebar">
+        <button class="nav-item" id="gamesNavBtn">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Games</span>
+        </button>
+        <button class="nav-item" id="searchNavBtn">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+        </button>
+    </aside>
+
+    <!-- MAIN CONTENT (list) -->
+    <main class="main-content" id="mainContent">
+        <!-- GAMES SECTION -->
+        <div id="gamesSection">
+            <div class="section-title">
+                <i class="fa-solid fa-gamepad"></i>
+                <span>Games</span>
+            </div>
+            <!-- ===== NEW: SEARCH BAR ===== -->
+            <input type="text" id="gameSearchBar" class="search-bar" placeholder="Search...">
+            <div class="games-grid" id="gamesGrid"></div>
+        </div>
+
+        <!-- SEARCH SECTION (now with full-page iframe) -->
+        <div id="searchSection" class="hidden">
+            <!-- ===== NEW: FULL-PAGE IFRAME FOR PROXY ===== -->
+            <div class="search-iframe-container" id="searchIframeContainer">
+                <iframe src="https://lanyon-tutoring-help.github.io/proxy/" title="Proxy" allowfullscreen></iframe>
+            </div>
+        </div>
+    </main>
+
+    <!-- FULL SCREEN GAME VIEW (separate screen) -->
+    <div id="gameScreen" class="game-screen">
+        <div class="game-header">
+            <span class="game-title" id="gameTitle">Game</span>
+            <div class="game-actions">
+                <button class="back-btn" id="backBtn">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button class="fullscreen-btn" id="fullscreenBtn">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+        </div>
+        <div class="iframe-container" id="iframeContainer">
+            <iframe id="gameIframe" src="" title="Game frame" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <!-- External games list (same directory) -->
+    <script src="games-list.js"></script>
+    <script>
+        (function() {
+            // ---------- DATA FROM games-list.js (supports const GamesData) ----------
+            // Your file uses: const GamesData = [ { name: "...", url: "https://..." }, ... ];
+            // Extra properties like description, category, etc. are automatically ignored.
+
+            // Fallback demo data
+            const DEFAULT_GAMES = [
+                { name: "Chess", url: "https://lichess.org/embed/board?theme=auto&bg=auto" },
+                { name: "Snake", url: "https://www.google.com/logos/fnbx/snake_game/play.html" },
+                { name: "Pacman", url: "https://www.google.com/logos/2010/pacman10-i.html" },
+                { name: "Tetris", url: "https://tetris.com/play-tetris" },
+                { name: "Solitaire", url: "https://worldofsolitaire.com/" },
+                { name: "Minesweeper", url: "https://minesweeper.online/" }
+            ];
+
+            // Helper to extract games from various global patterns
+            function extractGamesList() {
+                // Check for const GamesData (global variable)
+                try {
+                    if (typeof GamesData !== 'undefined' && Array.isArray(GamesData) && GamesData.length > 0) {
+                        return GamesData;
+                    }
+                } catch (e) {
+                    // GamesData is not accessible
+                }
+
+                // Check for window.GamesData (if declared with var)
+                if (typeof window.GamesData !== 'undefined' && Array.isArray(window.GamesData) && window.GamesData.length > 0) {
+                    return window.GamesData;
+                }
+
+                // Check for window.GAMES_LIST (older format)
+                if (typeof window.GAMES_LIST !== 'undefined' && Array.isArray(window.GAMES_LIST) && window.GAMES_LIST.length > 0) {
+                    return window.GAMES_LIST;
+                }
+
+                // Check for const games (generic)
+                try {
+                    if (typeof games !== 'undefined' && Array.isArray(games) && games.length > 0) {
+                        return games;
+                    }
+                } catch (e) {
+                    // games is not accessible
+                }
+
+                // Fallback to default
+                return DEFAULT_GAMES;
+            }
+
+            // ---------- SANITIZE GAME DATA ----------
+            // Extracts ONLY the essential fields (name, url) and ignores everything else.
+            // The title is taken from the "name" property of each game object.
+            function sanitizeGameData(rawList) {
+                return rawList.map(function(game) {
+                    return {
+                        // Use "name" as the primary title source, fall back to "title" if needed
+                        name: game.name || game.title || 'Untitled Game',
+                        url: game.url || ''
+                    };
+                });
+            }
+
+            let gamesList = sanitizeGameData(extractGamesList());
+
+            // ---------- DOM ----------
+            const gamesGrid = document.getElementById('gamesGrid');
+            const gameScreen = document.getElementById('gameScreen');
+            const gameTitle = document.getElementById('gameTitle');
+            const gameIframe = document.getElementById('gameIframe');
+            const iframeContainer = document.getElementById('iframeContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const backBtn = document.getElementById('backBtn');
+            const gamesSection = document.getElementById('gamesSection');
+            const searchSection = document.getElementById('searchSection');
+            const gamesNavBtn = document.getElementById('gamesNavBtn');
+            const searchNavBtn = document.getElementById('searchNavBtn');
+            const mainContent = document.getElementById('mainContent');
+            const searchIframeContainer = document.getElementById('searchIframeContainer');
+
+            // ===== NEW: DOM elements for private/welcome screens and search =====
+            const privateScreen = document.getElementById('privateScreen');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const gameSearchBar = document.getElementById('gameSearchBar');
+
+            // ===== NEW: ACCESS CONTROL =====
+            let isAuthorized = false;
+            let keySequence = [];
+            const requiredSequence = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown'];
+
+            // Hide private screen and show welcome, then main content
+            function grantAccess() {
+                isAuthorized = true;
+                privateScreen.classList.add('hidden');
+                welcomeScreen.classList.add('active');
+                setTimeout(() => {
+                    welcomeScreen.classList.remove('active');
+                }, 2000);
+            }
+
+            // Listen for arrow key sequence
+            document.addEventListener('keydown', function(e) {
+                if (isAuthorized) return;
+                keySequence.push(e.key);
+                if (keySequence.length > requiredSequence.length) {
+                    keySequence.shift();
+                }
+                if (keySequence.length === requiredSequence.length) {
+                    const matches = requiredSequence.every((key, i) => keySequence[i] === key);
+                    if (matches) {
+                        grantAccess();
+                    }
+                }
+            });
+
+            // ===== NEW: SEARCH FILTER =====
+            function renderGames(filterText = '') {
+                gamesGrid.innerHTML = '';
+                const filteredGames = gamesList.filter(game => 
+                    game.name.toLowerCase().includes(filterText.toLowerCase())
+                );
+                filteredGames.forEach((game) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'game-tile';
+
+                    // Just the name text — no icons
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = 'game-title-text';
+                    titleSpan.textContent = game.name || 'Game';
+                    tile.appendChild(titleSpan);
+
+                    // click -> open full screen game
+                    tile.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openGameScreen(game);
+                    });
+
+                    gamesGrid.appendChild(tile);
+                });
+            }
+
+            // Search bar input event
+            gameSearchBar.addEventListener('input', function() {
+                renderGames(this.value);
+            });
+
+            // ===== NEW: COMPACT MAIN CONTENT WHEN GAME IS OPEN =====
+            function compactContent() {
+                mainContent.classList.add('compacted');
+                searchIframeContainer.classList.add('compacted');
+            }
+
+            function restoreContent() {
+                mainContent.classList.remove('compacted');
+                searchIframeContainer.classList.remove('compacted');
+            }
+
+            // ===== NEW: TRACK SIDEBAR HOVER STATE =====
+            const sidebar = document.querySelector('.sidebar');
+
+            // Add class to game screen when sidebar is hovered
+            sidebar.addEventListener('mouseenter', function() {
+                gameScreen.classList.add('sidebar-expanded');
+            });
+
+            sidebar.addEventListener('mouseleave', function() {
+                gameScreen.classList.remove('sidebar-expanded');
+            });
+
+            // ---------- OPEN FULL SCREEN GAME (new screen) ----------
+            function openGameScreen(game) {
+                if (!game || !game.url) {
+                    alert('This game has no valid link.');
+                    return;
+                }
+                gameTitle.textContent = game.name || 'Game';
+                gameIframe.src = game.url;
+                gameScreen.classList.add('active');
+                compactContent(); // <-- Compact the content when a game is opened
+                setTimeout(() => {
+                    gameIframe.src = game.url;
+                }, 20);
+            }
+
+            // ---------- CLOSE GAME SCREEN ----------
+            function closeGameScreen() {
+                gameScreen.classList.remove('active');
+                gameIframe.src = 'about:blank';
+                restoreContent(); // <-- Restore the content when the game is closed
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+
+            backBtn.addEventListener('click', closeGameScreen);
+
+            // ---------- FULLSCREEN TOGGLE ----------
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    if (iframeContainer.requestFullscreen) {
+                        iframeContainer.requestFullscreen().catch(err => {
+                            alert(`Fullscreen error: ${err.message}`);
+                        });
+                    } else if (iframeContainer.webkitRequestFullscreen) {
+                        iframeContainer.webkitRequestFullscreen();
+                    } else {
+                        alert('Fullscreen API not supported.');
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // ---------- SIDEBAR NAVIGATION ----------
+            function showGamesSection() {
+                gamesSection.classList.remove('hidden');
+                searchSection.classList.add('hidden');
+                if (gameScreen.classList.contains('active')) {
+                    closeGameScreen();
+                }
+            }
+
+            function showSearchSection() {
+                searchSection.classList.remove('hidden');
+                gamesSection.classList.add('hidden');
+                if (gameScreen.classList.contains('active')) {
+                    closeGameScreen();
+                }
+            }
+
+            gamesNavBtn.addEventListener('click', showGamesSection);
+            searchNavBtn.addEventListener('click', showSearchSection);
+
+            // ---------- INIT ----------
+            renderGames();
+
+            // listen for external update (optional)
+            window.addEventListener('gamesListUpdated', function() {
+                gamesList = sanitizeGameData(extractGamesList());
+                renderGames();
+            });
+
+            // expose for debugging
+            window.openGameScreen = openGameScreen;
+            window.closeGameScreen = closeGameScreen;
+        })();
+    </script>
+    <!-- 
+        To use external games-list.js, create a file in the same directory.
+        Your file should look like:
+        const GamesData = [
+            { name: "Chess", url: "https://lichess.org/embed/board?theme=auto&bg=auto" },
+            { name: "Snake", url: "https://www.google.com/logos/fnbx/snake_game/play.html" },
+            // ... more games
+        ];
+
+        IMPORTANT: The game title is extracted from the "name" property.
+        Only "name" and "url" are used. 
+        Any extra properties (icon, description, category, etc.) are IGNORED.
+    -->
+</body>
+</html>
