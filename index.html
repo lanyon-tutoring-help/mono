@@ -31,18 +31,6 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <span>Search</span>
         </button>
-        <button class="nav-item" id="favoritesNavBtn">
-            <i class="fa-solid fa-star"></i>
-            <span>Favorites</span>
-        </button>
-        <button class="nav-item" id="bookmarksNavBtn">
-            <i class="fa-solid fa-bookmark"></i>
-            <span>Bookmarks</span>
-        </button>
-        <button class="nav-item" id="continueNavBtn">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span>Continue</span>
-        </button>
     </aside>
 
     <!-- ===== MAIN CONTENT ===== -->
@@ -54,40 +42,42 @@
                 <span>Games</span>
             </div>
             <input type="text" id="gameSearchBar" class="search-bar" placeholder="Search games...">
-            <div class="games-grid" id="gamesGrid"></div>
-        </div>
 
-        <!-- FAVORITES SECTION -->
-        <div id="favoritesSection" class="section-page">
-            <div class="section-title">
-                <i class="fa-solid fa-star"></i>
-                <span>Favorites</span>
+            <!-- CONTINUE -->
+            <div id="continueSubSection">
+                <div class="sub-section-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Continue Playing</span>
+                </div>
+                <div class="games-grid" id="continueGrid"></div>
+                <p id="continueEmpty" class="empty-message">No recently played games. Start playing to see them here!</p>
             </div>
-            <div class="games-grid" id="favoritesGrid"></div>
-            <p id="favoritesEmpty" class="empty-message">No favorites yet. Star a game to add it!</p>
-        </div>
 
-        <!-- BOOKMARKS SECTION -->
-        <div id="bookmarksSection" class="section-page">
-            <div class="section-title">
-                <i class="fa-solid fa-bookmark"></i>
-                <span>Bookmarks</span>
+            <!-- FAVORITES -->
+            <div id="favoritesSubSection">
+                <div class="sub-section-title">
+                    <i class="fa-solid fa-star"></i>
+                    <span>Favorites</span>
+                </div>
+                <div class="games-grid" id="favoritesGrid"></div>
+                <p id="favoritesEmpty" class="empty-message">No favorites yet. Star a game to add it!</p>
             </div>
-            <div class="games-grid" id="bookmarksGrid"></div>
-            <p id="bookmarksEmpty" class="empty-message">No bookmarks yet. Bookmark a game to save it!</p>
-        </div>
 
-        <!-- CONTINUE SECTION -->
-        <div id="continueSection" class="section-page">
-            <div class="section-title">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Continue Playing</span>
+            <!-- ALL GAMES -->
+            <div id="allGamesSubSection">
+                <div class="sub-section-title">
+                    <i class="fa-solid fa-list"></i>
+                    <span>All Games</span>
+                </div>
+                <div class="games-grid" id="gamesGrid"></div>
+                <div class="pagination-controls" id="paginationControls">
+                    <button id="loadMoreBtn" class="pagination-btn">Load More</button>
+                    <button id="showLessBtn" class="pagination-btn hidden">Show Less</button>
+                </div>
             </div>
-            <div class="games-grid" id="continueGrid"></div>
-            <p id="continueEmpty" class="empty-message">No recently played games. Start playing to see them here!</p>
         </div>
 
-        <!-- SEARCH SECTION (proxy) -->
+        <!-- SEARCH SECTION -->
         <div id="searchSection" class="section-page">
             <div class="search-iframe-container" id="searchIframeContainer">
                 <div id="searchSpinner" class="spinner-overlay">
@@ -109,12 +99,6 @@
                 </button>
                 <button class="fullscreen-btn" id="fullscreenBtn">
                     <i class="fa-solid fa-expand"></i> Fullscreen
-                </button>
-                <button class="fav-btn" id="gameFavBtn">
-                    <i class="fa-regular fa-star"></i>
-                </button>
-                <button class="bookmark-btn" id="gameBookmarkBtn">
-                    <i class="fa-regular fa-bookmark"></i>
                 </button>
             </div>
         </div>
@@ -170,7 +154,9 @@
                 });
             }
 
-            let gamesList = sanitizeGameData(extractGamesList());
+            let allGames = sanitizeGameData(extractGamesList());
+            let filteredGames = [...allGames];
+            let displayedGames = [];
 
             // ---------- STORAGE HELPERS ----------
             function getStorage(key, fallback) {
@@ -188,17 +174,16 @@
 
             // ---------- STATE ----------
             let favorites = getStorage('favorites', []);
-            let bookmarks = getStorage('bookmarks', []);
             let continueHistory = getStorage('continue', []);
             let currentGame = null;
+            let currentPage = 0;
+            const PAGE_SIZE = 100;
 
             // ---------- DOM REFS ----------
             const gamesGrid = document.getElementById('gamesGrid');
             const favoritesGrid = document.getElementById('favoritesGrid');
-            const bookmarksGrid = document.getElementById('bookmarksGrid');
             const continueGrid = document.getElementById('continueGrid');
             const favoritesEmpty = document.getElementById('favoritesEmpty');
-            const bookmarksEmpty = document.getElementById('bookmarksEmpty');
             const continueEmpty = document.getElementById('continueEmpty');
             const gameScreen = document.getElementById('gameScreen');
             const gameTitle = document.getElementById('gameTitle');
@@ -206,25 +191,19 @@
             const iframeContainer = document.getElementById('iframeContainer');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const backBtn = document.getElementById('backBtn');
-            const gameFavBtn = document.getElementById('gameFavBtn');
-            const gameBookmarkBtn = document.getElementById('gameBookmarkBtn');
             const gameSpinner = document.getElementById('gameSpinner');
             const searchSpinner = document.getElementById('searchSpinner');
             const searchIframe = document.getElementById('searchIframe');
             const gamesSection = document.getElementById('gamesSection');
-            const favoritesSection = document.getElementById('favoritesSection');
-            const bookmarksSection = document.getElementById('bookmarksSection');
-            const continueSection = document.getElementById('continueSection');
             const searchSection = document.getElementById('searchSection');
             const gamesNavBtn = document.getElementById('gamesNavBtn');
             const searchNavBtn = document.getElementById('searchNavBtn');
-            const favoritesNavBtn = document.getElementById('favoritesNavBtn');
-            const bookmarksNavBtn = document.getElementById('bookmarksNavBtn');
-            const continueNavBtn = document.getElementById('continueNavBtn');
             const mainContent = document.getElementById('mainContent');
             const gameSearchBar = document.getElementById('gameSearchBar');
             const privateScreen = document.getElementById('privateScreen');
             const welcomeScreen = document.getElementById('welcomeScreen');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const showLessBtn = document.getElementById('showLessBtn');
 
             // ---------- ACCESS CONTROL ----------
             let isAuthorized = false;
@@ -269,87 +248,90 @@
                 hideSpinner(searchSpinner);
             });
 
-            // ---------- RENDER FUNCTIONS ----------
-            function createGameTile(game, grid, isFav = false, isBookmark = false) {
+            // ---------- PAGINATION ----------
+            function getPageGames(page) {
+                const start = page * PAGE_SIZE;
+                const end = start + PAGE_SIZE;
+                return filteredGames.slice(start, end);
+            }
+
+            function renderAllGames() {
+                gamesGrid.innerHTML = '';
+                const pageGames = getPageGames(currentPage);
+                
+                if (pageGames.length === 0 && currentPage === 0) {
+                    // No games at all
+                    gamesGrid.innerHTML = '<p class="empty-message">No games found.</p>';
+                    loadMoreBtn.classList.add('hidden');
+                    showLessBtn.classList.add('hidden');
+                    return;
+                }
+
+                // Create tiles with slide-in animation
+                pageGames.forEach((game, index) => {
+                    const tile = createGameTile(game);
+                    tile.style.animationDelay = (index * 30) + 'ms';
+                    gamesGrid.appendChild(tile);
+                });
+
+                // Update pagination buttons
+                const totalPages = Math.ceil(filteredGames.length / PAGE_SIZE);
+                loadMoreBtn.classList.toggle('hidden', currentPage >= totalPages - 1);
+                showLessBtn.classList.toggle('hidden', currentPage === 0);
+            }
+
+            function loadMore() {
+                if ((currentPage + 1) * PAGE_SIZE < filteredGames.length) {
+                    currentPage++;
+                    renderAllGames();
+                    // Smooth scroll to top of all games section
+                    document.getElementById('allGamesSubSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function showLess() {
+                if (currentPage > 0) {
+                    currentPage--;
+                    renderAllGames();
+                    // Smooth scroll to top of all games section
+                    document.getElementById('allGamesSubSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            loadMoreBtn.addEventListener('click', loadMore);
+            showLessBtn.addEventListener('click', showLess);
+
+            // ---------- CREATE GAME TILE ----------
+            function createGameTile(game) {
                 const tile = document.createElement('div');
                 tile.className = 'game-tile slide-in';
 
+                // Favorite button (top-left)
+                const favBtn = document.createElement('button');
+                favBtn.className = 'tile-fav-btn';
+                const isFaved = favorites.some(g => g.url === game.url);
+                favBtn.innerHTML = isFaved ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
+                favBtn.title = isFaved ? 'Remove from favorites' : 'Add to favorites';
+                favBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleFavorite(game);
+                });
+                tile.appendChild(favBtn);
+
+                // Game name
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'game-title-text';
                 titleSpan.textContent = game.name;
                 tile.appendChild(titleSpan);
 
-                // Star button (favorite)
-                const starBtn = document.createElement('button');
-                starBtn.className = 'tile-action-btn';
-                const isFaved = favorites.some(g => g.url === game.url);
-                starBtn.innerHTML = isFaved ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
-                starBtn.title = isFaved ? 'Remove from favorites' : 'Add to favorites';
-                starBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleFavorite(game);
-                });
-                tile.appendChild(starBtn);
-
-                // Bookmark button
-                const bookBtn = document.createElement('button');
-                bookBtn.className = 'tile-action-btn';
-                const isBookmarked = bookmarks.some(g => g.url === game.url);
-                bookBtn.innerHTML = isBookmarked ? '<i class="fa-solid fa-bookmark"></i>' : '<i class="fa-regular fa-bookmark"></i>';
-                bookBtn.title = isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks';
-                bookBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleBookmark(game);
-                });
-                tile.appendChild(bookBtn);
-
                 tile.addEventListener('click', function() {
                     openGameScreen(game);
                 });
 
-                grid.appendChild(tile);
                 return tile;
             }
 
-            function renderGames(filterText = '') {
-                gamesGrid.innerHTML = '';
-                const filtered = gamesList.filter(g => 
-                    g.name.toLowerCase().includes(filterText.toLowerCase())
-                );
-                filtered.forEach(g => createGameTile(g, gamesGrid));
-            }
-
-            function renderFavorites() {
-                favoritesGrid.innerHTML = '';
-                if (favorites.length === 0) {
-                    favoritesEmpty.style.display = 'block';
-                    return;
-                }
-                favoritesEmpty.style.display = 'none';
-                favorites.forEach(g => createGameTile(g, favoritesGrid, true));
-            }
-
-            function renderBookmarks() {
-                bookmarksGrid.innerHTML = '';
-                if (bookmarks.length === 0) {
-                    bookmarksEmpty.style.display = 'block';
-                    return;
-                }
-                bookmarksEmpty.style.display = 'none';
-                bookmarks.forEach(g => createGameTile(g, bookmarksGrid, false, true));
-            }
-
-            function renderContinue() {
-                continueGrid.innerHTML = '';
-                if (continueHistory.length === 0) {
-                    continueEmpty.style.display = 'block';
-                    return;
-                }
-                continueEmpty.style.display = 'none';
-                continueHistory.forEach(g => createGameTile(g, continueGrid));
-            }
-
-            // ---------- FAVORITE / BOOKMARK TOGGLES ----------
+            // ---------- TOGGLE FAVORITE ----------
             function toggleFavorite(game) {
                 const idx = favorites.findIndex(g => g.url === game.url);
                 if (idx > -1) {
@@ -359,30 +341,61 @@
                 }
                 setStorage('favorites', favorites);
                 renderFavorites();
-                updateGameActionButtons();
-                renderGames(gameSearchBar.value);
+                renderAllGames(); // Refresh all games to update star states
+                renderContinue();
             }
 
-            function toggleBookmark(game) {
-                const idx = bookmarks.findIndex(g => g.url === game.url);
-                if (idx > -1) {
-                    bookmarks.splice(idx, 1);
-                } else {
-                    bookmarks.push({ name: game.name, url: game.url });
+            // ---------- RENDER FUNCTIONS ----------
+            function renderFavorites() {
+                favoritesGrid.innerHTML = '';
+                if (favorites.length === 0) {
+                    favoritesEmpty.style.display = 'block';
+                    return;
                 }
-                setStorage('bookmarks', bookmarks);
-                renderBookmarks();
-                updateGameActionButtons();
-                renderGames(gameSearchBar.value);
+                favoritesEmpty.style.display = 'none';
+                favorites.forEach((game, index) => {
+                    const tile = createGameTile(game);
+                    tile.style.animationDelay = (index * 30) + 'ms';
+                    favoritesGrid.appendChild(tile);
+                });
             }
 
-            function updateGameActionButtons() {
-                if (!currentGame) return;
-                const isFaved = favorites.some(g => g.url === currentGame.url);
-                gameFavBtn.innerHTML = isFaved ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
-                const isBookmarked = bookmarks.some(g => g.url === currentGame.url);
-                gameBookmarkBtn.innerHTML = isBookmarked ? '<i class="fa-solid fa-bookmark"></i>' : '<i class="fa-regular fa-bookmark"></i>';
+            function renderContinue() {
+                continueGrid.innerHTML = '';
+                if (continueHistory.length === 0) {
+                    continueEmpty.style.display = 'block';
+                    return;
+                }
+                continueEmpty.style.display = 'none';
+                continueHistory.forEach((game, index) => {
+                    const tile = createGameTile(game);
+                    tile.style.animationDelay = (index * 30) + 'ms';
+                    continueGrid.appendChild(tile);
+                });
             }
+
+            function renderAll() {
+                renderAllGames();
+                renderFavorites();
+                renderContinue();
+            }
+
+            // ---------- SEARCH FILTER ----------
+            gameSearchBar.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                if (query === '') {
+                    filteredGames = [...allGames];
+                } else {
+                    filteredGames = allGames.filter(g => 
+                        g.name.toLowerCase().includes(query)
+                    );
+                }
+                currentPage = 0;
+                renderAllGames();
+                // Hide favorites/continue when searching
+                document.getElementById('favoritesSubSection').style.display = query ? 'none' : 'block';
+                document.getElementById('continueSubSection').style.display = query ? 'none' : 'block';
+            });
 
             // ---------- OPEN / CLOSE GAME ----------
             function openGameScreen(game) {
@@ -404,7 +417,6 @@
                 setStorage('continue', continueHistory);
                 renderContinue();
 
-                updateGameActionButtons();
                 setTimeout(() => {
                     gameIframe.src = game.url;
                 }, 20);
@@ -419,8 +431,6 @@
                 if (document.fullscreenElement) {
                     document.exitFullscreen().catch(() => {});
                 }
-                // Restore section
-                showSection(currentSection);
             }
 
             backBtn.addEventListener('click', closeGameScreen);
@@ -440,41 +450,18 @@
             }
             fullscreenBtn.addEventListener('click', toggleFullscreen);
 
-            // ---------- GAME ACTION BUTTONS ----------
-            gameFavBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (currentGame) toggleFavorite(currentGame);
-            });
-
-            gameBookmarkBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (currentGame) toggleBookmark(currentGame);
-            });
-
             // ---------- SECTION NAVIGATION ----------
             let currentSection = 'games';
 
             function showSection(section) {
-                // Hide all sections with smooth transition
                 document.querySelectorAll('.section-page').forEach(el => {
                     el.classList.remove('active');
                 });
 
-                // Show target
-                const map = {
-                    'games': gamesSection,
-                    'favorites': favoritesSection,
-                    'bookmarks': bookmarksSection,
-                    'continue': continueSection,
-                    'search': searchSection
-                };
-                const target = map[section];
-                if (target) {
-                    target.classList.add('active');
-                    // Re-render dynamic sections
-                    if (section === 'favorites') renderFavorites();
-                    if (section === 'bookmarks') renderBookmarks();
-                    if (section === 'continue') renderContinue();
+                if (section === 'games') {
+                    gamesSection.classList.add('active');
+                } else if (section === 'search') {
+                    searchSection.classList.add('active');
                 }
 
                 currentSection = section;
@@ -485,14 +472,25 @@
             }
 
             gamesNavBtn.addEventListener('click', function() { showSection('games'); });
-            favoritesNavBtn.addEventListener('click', function() { showSection('favorites'); });
-            bookmarksNavBtn.addEventListener('click', function() { showSection('bookmarks'); });
-            continueNavBtn.addEventListener('click', function() { showSection('continue'); });
             searchNavBtn.addEventListener('click', function() { showSection('search'); });
 
-            // ---------- SEARCH BAR ----------
-            gameSearchBar.addEventListener('input', function() {
-                renderGames(this.value);
+            // ---------- KEYBOARD SHORTCUTS ----------
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'g') {
+                    e.preventDefault();
+                    showSection('games');
+                }
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    showSection('search');
+                }
+                if (e.key === 'Escape' && gameScreen.classList.contains('active')) {
+                    closeGameScreen();
+                }
+                if (e.key === 'f' && !e.ctrlKey && gameScreen.classList.contains('active')) {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
             });
 
             // ---------- SIDEBAR HOVER ----------
@@ -504,49 +502,15 @@
                 gameScreen.classList.remove('sidebar-expanded');
             });
 
-            // ---------- KEYBOARD SHORTCUTS ----------
-            document.addEventListener('keydown', function(e) {
-                // Ctrl+G -> Games
-                if (e.ctrlKey && e.key === 'g') {
-                    e.preventDefault();
-                    showSection('games');
-                }
-                // Ctrl+S -> Search
-                if (e.ctrlKey && e.key === 's') {
-                    e.preventDefault();
-                    showSection('search');
-                }
-                // Ctrl+F -> Favorites
-                if (e.ctrlKey && e.key === 'f') {
-                    e.preventDefault();
-                    showSection('favorites');
-                }
-                // Ctrl+B -> Bookmarks
-                if (e.ctrlKey && e.key === 'b') {
-                    e.preventDefault();
-                    showSection('bookmarks');
-                }
-                // Escape -> Close game
-                if (e.key === 'Escape' && gameScreen.classList.contains('active')) {
-                    closeGameScreen();
-                }
-                // F -> Fullscreen (when game is open)
-                if (e.key === 'f' && !e.ctrlKey && gameScreen.classList.contains('active')) {
-                    e.preventDefault();
-                    toggleFullscreen();
-                }
-            });
-
             // ---------- INIT ----------
-            renderGames();
-            renderFavorites();
-            renderBookmarks();
-            renderContinue();
+            renderAll();
             showSection('games');
 
             // Expose for debugging
             window.openGameScreen = openGameScreen;
             window.closeGameScreen = closeGameScreen;
+            window.loadMore = loadMore;
+            window.showLess = showLess;
 
         })();
     </script>
