@@ -212,6 +212,10 @@ body {
     opacity: 0;
 }
 
+.game-tile.slide-out {
+    animation: slideOut 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -221,10 +225,6 @@ body {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
-}
-
-.game-tile.slide-out {
-    animation: slideOut 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
 }
 
 @keyframes slideOut {
@@ -252,31 +252,33 @@ body {
     letter-spacing: 0.3px;
     line-height: 1.4;
     word-break: break-word;
+    padding-top: 8px;
 }
 
 .game-tile:hover .game-title-text {
     color: white;
 }
 
-/* ---------- FAVORITE BUTTON (top-left of tile) ---------- */
+/* ---------- FAVORITE BUTTON (top-left, smaller) ---------- */
 .tile-fav-btn {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    background: rgba(0, 0, 0, 0.6);
+    top: 6px;
+    left: 6px;
+    background: rgba(0, 0, 0, 0.5);
     border: none;
     color: #666;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 8px;
+    padding: 2px 6px;
+    border-radius: 6px;
     transition: all 0.2s;
     z-index: 2;
+    line-height: 1;
 }
 
 .tile-fav-btn:hover {
     color: #ffd700;
-    background: rgba(255, 215, 0, 0.15);
+    background: rgba(255, 215, 0, 0.12);
 }
 
 .tile-fav-btn .fa-solid.fa-star {
@@ -480,15 +482,18 @@ body {
     font-size: 0.95rem;
 }
 
-/* ---------- SEARCH IFRAME ---------- */
+/* ---------- SEARCH IFRAME (full page) ---------- */
 .search-iframe-container {
-    position: relative;
-    width: 100%;
-    height: 80vh;
+    position: fixed;
+    top: 0;
+    left: 55px;
+    width: calc(100vw - 55px);
+    height: 100vh;
     background: #000;
-    border-radius: 16px;
+    z-index: 100;
+    border: none;
+    border-radius: 0;
     overflow: hidden;
-    border: 1px solid #2a2a2a;
 }
 
 .search-iframe-container iframe {
