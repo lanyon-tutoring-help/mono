@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MONO</title>
-
+    <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="https://static.vecteezy.com/system/resources/previews/076/316/072/large_2x/vibrant-purple-logo-with-star-and-rocket-vector.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -83,10 +83,6 @@
         <!-- SEARCH SECTION (full page iframe) -->
         <div id="searchSection" class="section-page">
             <div class="search-iframe-container" id="searchIframeContainer">
-                <div id="searchSpinner" class="spinner-overlay">
-                    <div class="spinner"></div>
-                    <p>Loading proxy...</p>
-                </div>
                 <iframe id="searchIframe" src="https://s3.amazonaws.com/deaganfern/index.html" title="Proxy" allowfullscreen></iframe>
             </div>
         </div>
@@ -197,7 +193,6 @@
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const backBtn = document.getElementById('backBtn');
             const gameSpinner = document.getElementById('gameSpinner');
-            const searchSpinner = document.getElementById('searchSpinner');
             const searchIframe = document.getElementById('searchIframe');
             const gamesSection = document.getElementById('gamesSection');
             const searchSection = document.getElementById('searchSection');
@@ -247,10 +242,6 @@
             // ---------- IFRAME LOADING ----------
             gameIframe.addEventListener('load', function() {
                 hideSpinner(gameSpinner);
-            });
-
-            searchIframe.addEventListener('load', function() {
-                hideSpinner(searchSpinner);
             });
 
             // ---------- CREATE GAME TILE ----------
@@ -508,13 +499,13 @@
 
             backBtn.addEventListener('click', closeGameScreen);
 
-            // ---------- FULLSCREEN ----------
+            // ---------- FULLSCREEN (on iframe only) ----------
             function toggleFullscreen() {
                 if (!document.fullscreenElement) {
-                    if (gameScreen.requestFullscreen) {
-                        gameScreen.requestFullscreen().catch(() => {});
-                    } else if (gameScreen.webkitRequestFullscreen) {
-                        gameScreen.webkitRequestFullscreen();
+                    if (iframeContainer.requestFullscreen) {
+                        iframeContainer.requestFullscreen().catch(() => {});
+                    } else if (iframeContainer.webkitRequestFullscreen) {
+                        iframeContainer.webkitRequestFullscreen();
                     }
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
