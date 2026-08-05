@@ -416,7 +416,7 @@ const GamesData = [
   { name: "Vectorman", url: "https://olivia-games.github.io/seraph/games/vectorman/index.html", category: "action", description: "Vectorman delivers nonstop arcade-style action." },
   { name: "Vectorman2", url: "https://olivia-games.github.io/seraph/games/vectorman2/index.html", category: "action", description: "Fast-paced action challenge featuring Vectorman2." },
   { name: "Illusionofgaia", url: "https://olivia-games.github.io/seraph/games/illusionofgaia/index.html", category: "action", description: "React quickly and survive intense action in Illusionofgaia." },
-  { name: "Pokemonyellow", url: "https://olivia-games.github.io/seraph/games/pokemonyellow/index.html", category: "rpg", description: "An RPG adventure filled with depth: Pokemonyellow." },
+  { name: "Pokemon Yellow", url: "https://olivia-games.github.io/seraph/games/pokemonyellow/index.html", category: "rpg", description: "An RPG adventure filled with depth: Pokemonyellow." },
   { name: "Abudathealien", url: "https://olivia-games.github.io/seraph/games/abudathealien/index.html", category: "action", description: "Fast-paced action challenge featuring Abudathealien." },
   { name: "Battlebeavers", url: "https://olivia-games.github.io/seraph/games/battlebeavers/index.html", category: "action", description: "React quickly and survive intense action in Battlebeavers." },
   { name: "Controlcraft2", url: "https://olivia-games.github.io/seraph/games/controlcraft2/index.html", category: "action", description: "Controlcraft2 delivers nonstop arcade-style action." },
