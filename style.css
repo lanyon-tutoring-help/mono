@@ -129,11 +129,6 @@ body {
     position: relative;
 }
 
-.main-content.compacted {
-    margin-left: 180px;
-    width: calc(100vw - 180px);
-}
-
 /* ---------- SECTION PAGES ---------- */
 .section-page {
     display: none;
@@ -367,21 +362,19 @@ body {
     display: none;
 }
 
-/* ---------- FULL SCREEN GAME VIEW (NO CREDIT TEXT) ---------- */
+/* ---------- FULL SCREEN GAME VIEW ---------- */
 .game-screen {
     position: fixed;
     top: 0;
-    left: 60px;
-    width: calc(100vw - 60px);
+    left: 0;
+    width: 100vw;
     height: 100vh;
     background: #0a0a0a;
-    z-index: 1000;
+    z-index: 9999;
     display: none;
     flex-direction: column;
     padding: 1.5rem 2rem;
     overflow: hidden;
-    transition: left 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1), width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
-    position: relative;
 }
 
 .game-screen.active {
@@ -389,14 +382,14 @@ body {
     animation: fadeIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1); }
-}
-
 .game-screen.sidebar-expanded {
     left: 180px;
     width: calc(100vw - 180px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .game-header {
@@ -408,6 +401,7 @@ body {
     gap: 12px;
     border-bottom: 1px solid #2a2a2a;
     padding-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .game-title {
@@ -415,8 +409,6 @@ body {
     font-weight: 600;
     color: #f0f0f0;
     letter-spacing: -0.5px;
-    background: none;
-    -webkit-text-fill-color: #f0f0f0;
 }
 
 .game-actions {
@@ -466,16 +458,6 @@ body {
     display: block;
 }
 
-.iframe-container:fullscreen {
-    border-radius: 0;
-    border: none;
-}
-
-.iframe-container:fullscreen iframe {
-    height: 100vh;
-    width: 100vw;
-}
-
 /* ---------- SPINNER ---------- */
 .spinner-overlay {
     position: absolute;
@@ -517,7 +499,7 @@ body {
     font-size: 0.95rem;
 }
 
-/* ---------- SEARCH IFRAME (full page, no gaps, covers entire section) ---------- */
+/* ---------- SEARCH IFRAME (full page, covers entire section) ---------- */
 .search-iframe-container {
     position: fixed;
     top: 0;
@@ -616,16 +598,10 @@ body {
         margin-left: 55px;
         width: calc(100vw - 55px);
     }
-    .main-content.compacted {
-        margin-left: 160px;
-        width: calc(100vw - 160px);
-    }
     .sidebar:hover {
         width: 160px;
     }
     .game-screen {
-        left: 60px;
-        width: calc(100vw - 60px);
         padding: 1rem;
     }
     .game-screen.sidebar-expanded {
