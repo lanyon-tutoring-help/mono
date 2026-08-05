@@ -93,9 +93,8 @@
         </div>
     </main>
 
-    <!-- ===== FULL SCREEN GAME VIEW ===== -->
+    <!-- ===== FULL SCREEN GAME VIEW (NO WATERMARK) ===== -->
     <div id="gameScreen" class="game-screen">
-        <div class="watermark">Made by Aiden</div>
         <div class="game-header">
             <span class="game-title" id="gameTitle">Game</span>
             <div class="game-actions">
@@ -340,9 +339,7 @@
                     return;
                 }
 
-                // Use requestAnimationFrame for smoother rendering
                 requestAnimationFrame(() => {
-                    // Create a document fragment for batch DOM insertion
                     const fragment = document.createDocumentFragment();
                     pageGames.forEach((game, index) => {
                         const tile = createGameTile(game, totalLoaded + index);
@@ -353,7 +350,6 @@
 
                 totalLoaded += pageGames.length;
 
-                // Update pagination buttons
                 const totalGames = filteredGames.length;
                 const totalPages = Math.ceil(totalGames / PAGE_SIZE);
                 
@@ -373,7 +369,6 @@
                     isLoadingMore = true;
                     currentPage++;
                     renderAllGames(false);
-                    // Smooth scroll to show the new games
                     setTimeout(() => {
                         const lastTile = gamesGrid.lastElementChild;
                         if (lastTile) {
@@ -388,7 +383,6 @@
                     const tiles = gamesGrid.querySelectorAll('.game-tile');
                     const toRemove = Math.min(PAGE_SIZE, tiles.length);
                     
-                    // Add slide-out animation
                     for (let i = tiles.length - 1; i >= tiles.length - toRemove; i--) {
                         if (tiles[i]) {
                             tiles[i].classList.add('slide-out');
