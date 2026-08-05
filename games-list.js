@@ -7,6 +7,7 @@ const GamesData = [
   { name: "Flappy", url: "https://olivia-games.github.io/seraph/games/flappy/index.html", category: "action", description: "Flappy delivers nonstop arcade-style action." },
   { name: "Papa's Pizzaria", url: "https://olivia-games.github.io/seraph/games/papaspizzaria/index.html", category: "restaurant", description: "Cook, serve, and manage customers in Papaspizzaria." },
   { name: "Papa's Burgeria", url: "https://olivia-games.github.io/seraph/games/papasburgeria/index.html", category: "restaurant", description: "Papasburgeria lets you run your own virtual restaurant." },
+  { name: "Slither.io", url: "https://rycellgames.github.io/raw/games/slitherio/index.html", category: "action", description: "Intense action packer slither game" },
   { name: "Super Mario 64", url: "https://olivia-games.github.io/seraph/games/sm64/index.html", category: "action", description: "Sm64 delivers nonstop arcade-style action." },
   { name: "Run 3", url: "https://olivia-games.github.io/seraph/games/run3/index.html", category: "action", description: "Fast-paced action challenge featuring Run3." },
   { name: "Bitlife", url: "https://olivia-games.github.io/seraph/games/bitlife/index.html", category: "action", description: "React quickly and survive intense action in Bitlife." },
