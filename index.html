@@ -92,7 +92,7 @@
         </div>
     </main>
 
-    <!-- ===== FULL SCREEN GAME VIEW (NO CREDIT TEXT) ===== -->
+    <!-- ===== FULL SCREEN GAME VIEW ===== -->
     <div id="gameScreen" class="game-screen">
         <div class="game-header">
             <span class="game-title" id="gameTitle">Game</span>
@@ -480,7 +480,7 @@
                 showSpinner(gameSpinner);
                 gameIframe.src = game.url;
                 gameScreen.classList.add('active');
-                mainContent.classList.add('compacted');
+                document.body.style.overflow = 'hidden';
 
                 continueHistory = continueHistory.filter(g => g.url !== game.url);
                 continueHistory.unshift({ name: game.name, url: game.url });
@@ -499,7 +499,7 @@
                 gameScreen.classList.remove('active');
                 gameIframe.src = 'about:blank';
                 gameSpinner.classList.add('hidden');
-                mainContent.classList.remove('compacted');
+                document.body.style.overflow = '';
                 currentGame = null;
                 if (document.fullscreenElement) {
                     document.exitFullscreen().catch(() => {});
@@ -511,10 +511,10 @@
             // ---------- FULLSCREEN ----------
             function toggleFullscreen() {
                 if (!document.fullscreenElement) {
-                    if (iframeContainer.requestFullscreen) {
-                        iframeContainer.requestFullscreen().catch(() => {});
-                    } else if (iframeContainer.webkitRequestFullscreen) {
-                        iframeContainer.webkitRequestFullscreen();
+                    if (gameScreen.requestFullscreen) {
+                        gameScreen.requestFullscreen().catch(() => {});
+                    } else if (gameScreen.webkitRequestFullscreen) {
+                        gameScreen.webkitRequestFullscreen();
                     }
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
