@@ -125,6 +125,7 @@ body {
     display: none;
     animation: slideUp 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
     position: relative;
+    min-height: 100vh;
 }
 
 .section-page.active {
@@ -153,6 +154,7 @@ body {
     gap: 14px;
     color: #eaeaea;
     letter-spacing: -0.5px;
+    padding-top: 10px;
 }
 
 .section-title i {
@@ -351,7 +353,7 @@ body {
     display: none;
 }
 
-/* ---------- FULL SCREEN GAME VIEW ---------- */
+/* ---------- FULL SCREEN GAME VIEW (NO CREDIT TEXT) ---------- */
 .game-screen {
     position: fixed;
     top: 0;
@@ -501,16 +503,20 @@ body {
     font-size: 0.95rem;
 }
 
-/* ---------- SEARCH IFRAME (original behavior - no snapping) ---------- */
+/* ---------- SEARCH IFRAME (full page, no gaps, no jumping) ---------- */
 .search-iframe-container {
-    position: relative;
-    width: 100%;
-    height: 80vh;
+    position: fixed;
+    top: 0;
+    left: 55px;
+    width: calc(100vw - 55px);
+    height: 100vh;
     background: #000;
-    border-radius: 16px;
+    z-index: 100;
+    border: none;
+    border-radius: 0;
     overflow: hidden;
-    border: 1px solid #2a2a2a;
-    margin-top: 10px;
+    margin: 0;
+    padding: 0;
 }
 
 .search-iframe-container iframe {
@@ -518,6 +524,8 @@ body {
     height: 100%;
     border: none;
     display: block;
+    margin: 0;
+    padding: 0;
 }
 
 /* ---------- PRIVATE SCREEN ---------- */
@@ -646,6 +654,7 @@ body {
         right: 16px;
     }
     .search-iframe-container {
-        height: 70vh;
+        left: 55px;
+        width: calc(100vw - 55px);
     }
 }
