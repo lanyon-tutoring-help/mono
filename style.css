@@ -86,11 +86,25 @@ body {
     color: white;
 }
 
-/* ---------- CREDIT TEXT (top-right) ---------- */
-.credit-text {
+/* ---------- CREDIT TEXT (games section top-right) ---------- */
+.games-credit {
     position: absolute;
-    top: 20px;
-    right: 30px;
+    top: 16px;
+    right: 28px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.3px;
+    font-weight: 400;
+    pointer-events: none;
+    z-index: 10;
+    background: rgba(0,0,0,0.25);
+    padding: 4px 14px;
+    border-radius: 20px;
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.credit-text {
     font-size: 0.85rem;
     color: #444;
     font-weight: 400;
@@ -199,6 +213,20 @@ body {
 
 .search-bar::placeholder {
     color: #666;
+}
+
+/* ---------- SEARCH PLACEHOLDER (iframe removed) ---------- */
+.search-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #555;
+    font-size: 1.2rem;
+    border: 1px dashed #2a2a2a;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
 }
 
 /* ---------- GAMES GRID ---------- */
@@ -503,31 +531,6 @@ body {
     font-size: 0.95rem;
 }
 
-/* ---------- SEARCH IFRAME (full page, no gaps, no jumping) ---------- */
-.search-iframe-container {
-    position: fixed;
-    top: 0;
-    left: 55px;
-    width: calc(100vw - 55px);
-    height: 100vh;
-    background: #000;
-    z-index: 100;
-    border: none;
-    border-radius: 0;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-}
-
-.search-iframe-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-    margin: 0;
-    padding: 0;
-}
-
 /* ---------- PRIVATE SCREEN ---------- */
 .private-screen {
     position: fixed;
@@ -648,13 +651,10 @@ body {
         padding: 10px 20px;
         font-size: 0.85rem;
     }
-    .credit-text {
+    .games-credit {
         font-size: 0.7rem;
         top: 12px;
         right: 16px;
-    }
-    .search-iframe-container {
-        left: 55px;
-        width: calc(100vw - 55px);
+        padding: 3px 10px;
     }
 }
