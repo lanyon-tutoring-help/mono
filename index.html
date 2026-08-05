@@ -77,7 +77,7 @@
             </div>
         </div>
 
-        <!-- SEARCH SECTION -->
+        <!-- SEARCH SECTION (full page) -->
         <div id="searchSection" class="section-page">
             <div class="search-iframe-container" id="searchIframeContainer">
                 <div id="searchSpinner" class="spinner-overlay">
@@ -156,7 +156,6 @@
 
             let allGames = sanitizeGameData(extractGamesList());
             let filteredGames = [...allGames];
-            let displayedGames = [];
 
             // ---------- STORAGE HELPERS ----------
             function getStorage(key, fallback) {
@@ -177,7 +176,9 @@
             let continueHistory = getStorage('continue', []);
             let currentGame = null;
             let currentPage = 0;
+            let totalLoaded = 0;
             const PAGE_SIZE = 100;
+            const MAX_CONTINUE = 8;
 
             // ---------- DOM REFS ----------
             const gamesGrid = document.getElementById('gamesGrid');
@@ -248,65 +249,13 @@
                 hideSpinner(searchSpinner);
             });
 
-            // ---------- PAGINATION ----------
-            function getPageGames(page) {
-                const start = page * PAGE_SIZE;
-                const end = start + PAGE_SIZE;
-                return filteredGames.slice(start, end);
-            }
-
-            function renderAllGames() {
-                gamesGrid.innerHTML = '';
-                const pageGames = getPageGames(currentPage);
-                
-                if (pageGames.length === 0 && currentPage === 0) {
-                    // No games at all
-                    gamesGrid.innerHTML = '<p class="empty-message">No games found.</p>';
-                    loadMoreBtn.classList.add('hidden');
-                    showLessBtn.classList.add('hidden');
-                    return;
-                }
-
-                // Create tiles with slide-in animation
-                pageGames.forEach((game, index) => {
-                    const tile = createGameTile(game);
-                    tile.style.animationDelay = (index * 30) + 'ms';
-                    gamesGrid.appendChild(tile);
-                });
-
-                // Update pagination buttons
-                const totalPages = Math.ceil(filteredGames.length / PAGE_SIZE);
-                loadMoreBtn.classList.toggle('hidden', currentPage >= totalPages - 1);
-                showLessBtn.classList.toggle('hidden', currentPage === 0);
-            }
-
-            function loadMore() {
-                if ((currentPage + 1) * PAGE_SIZE < filteredGames.length) {
-                    currentPage++;
-                    renderAllGames();
-                    // Smooth scroll to top of all games section
-                    document.getElementById('allGamesSubSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-
-            function showLess() {
-                if (currentPage > 0) {
-                    currentPage--;
-                    renderAllGames();
-                    // Smooth scroll to top of all games section
-                    document.getElementById('allGamesSubSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-
-            loadMoreBtn.addEventListener('click', loadMore);
-            showLessBtn.addEventListener('click', showLess);
-
             // ---------- CREATE GAME TILE ----------
-            function createGameTile(game) {
+            function createGameTile(game, index) {
                 const tile = document.createElement('div');
                 tile.className = 'game-tile slide-in';
+                tile.style.animationDelay = (index * 30) + 'ms';
 
-                // Favorite button (top-left)
+                // Favorite button (top-left, smaller)
                 const favBtn = document.createElement('button');
                 favBtn.className = 'tile-fav-btn';
                 const isFaved = favorites.some(g => g.url === game.url);
@@ -341,9 +290,119 @@
                 }
                 setStorage('favorites', favorites);
                 renderFavorites();
-                renderAllGames(); // Refresh all games to update star states
+                // Refresh all games to update star states (without losing scroll position)
+                refreshAllGameStars();
                 renderContinue();
             }
+
+            // ---------- REFRESH STARS (without re-rendering all games) ----------
+            function refreshAllGameStars() {
+                const allTiles = gamesGrid.querySelectorAll('.game-tile');
+                allTiles.forEach(tile => {
+                    const favBtn = tile.querySelector('.tile-fav-btn');
+                    if (favBtn) {
+                        const gameName = tile.querySelector('.game-title-text')?.textContent || '';
+                        const game = allGames.find(g => g.name === gameName);
+                        if (game) {
+                            const isFaved = favorites.some(g => g.url === game.url);
+                            favBtn.innerHTML = isFaved ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
+                            favBtn.title = isFaved ? 'Remove from favorites' : 'Add to favorites';
+                        }
+                    }
+                });
+            }
+
+            // ---------- PAGINATION ----------
+            function getPageGames(page) {
+                const start = page * PAGE_SIZE;
+                const end = start + PAGE_SIZE;
+                return filteredGames.slice(start, end);
+            }
+
+            function renderAllGames(reset = true) {
+                if (reset) {
+                    gamesGrid.innerHTML = '';
+                    totalLoaded = 0;
+                    currentPage = 0;
+                }
+
+                const pageGames = getPageGames(currentPage);
+                
+                if (pageGames.length === 0 && totalLoaded === 0) {
+                    gamesGrid.innerHTML = '<p class="empty-message">No games found.</p>';
+                    loadMoreBtn.classList.add('hidden');
+                    showLessBtn.classList.add('hidden');
+                    return;
+                }
+
+                // Append new games
+                pageGames.forEach((game, index) => {
+                    const tile = createGameTile(game, totalLoaded + index);
+                    gamesGrid.appendChild(tile);
+                });
+
+                totalLoaded += pageGames.length;
+
+                // Update pagination buttons
+                const totalGames = filteredGames.length;
+                const totalPages = Math.ceil(totalGames / PAGE_SIZE);
+                
+                if (totalLoaded >= totalGames) {
+                    loadMoreBtn.classList.add('hidden');
+                } else {
+                    loadMoreBtn.classList.remove('hidden');
+                }
+                
+                showLessBtn.classList.toggle('hidden', totalLoaded <= PAGE_SIZE);
+            }
+
+            function loadMore() {
+                if (totalLoaded < filteredGames.length) {
+                    currentPage++;
+                    renderAllGames(false); // Don't reset, just append
+                    // Smooth scroll to show the new games
+                    const lastTile = gamesGrid.lastElementChild;
+                    if (lastTile) {
+                        lastTile.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }
+                }
+            }
+
+            function showLess() {
+                if (totalLoaded > PAGE_SIZE) {
+                    // Remove the last PAGE_SIZE games
+                    const tiles = gamesGrid.querySelectorAll('.game-tile');
+                    const toRemove = Math.min(PAGE_SIZE, tiles.length);
+                    
+                    // Add slide-out animation
+                    for (let i = tiles.length - 1; i >= tiles.length - toRemove; i--) {
+                        if (tiles[i]) {
+                            tiles[i].classList.add('slide-out');
+                        }
+                    }
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        for (let i = tiles.length - 1; i >= tiles.length - toRemove; i--) {
+                            if (tiles[i]) {
+                                tiles[i].remove();
+                            }
+                        }
+                        totalLoaded -= toRemove;
+                        currentPage--;
+                        
+                        // Update buttons
+                        const totalGames = filteredGames.length;
+                        if (totalLoaded < totalGames) {
+                            loadMoreBtn.classList.remove('hidden');
+                        }
+                        showLessBtn.classList.toggle('hidden', totalLoaded <= PAGE_SIZE);
+                    }, 300);
+                }
+            }
+
+            loadMoreBtn.addEventListener('click', loadMore);
+            showLessBtn.addEventListener('click', showLess);
 
             // ---------- RENDER FUNCTIONS ----------
             function renderFavorites() {
@@ -354,28 +413,28 @@
                 }
                 favoritesEmpty.style.display = 'none';
                 favorites.forEach((game, index) => {
-                    const tile = createGameTile(game);
-                    tile.style.animationDelay = (index * 30) + 'ms';
+                    const tile = createGameTile(game, index);
                     favoritesGrid.appendChild(tile);
                 });
             }
 
             function renderContinue() {
                 continueGrid.innerHTML = '';
-                if (continueHistory.length === 0) {
+                const displayHistory = continueHistory.slice(0, MAX_CONTINUE);
+                
+                if (displayHistory.length === 0) {
                     continueEmpty.style.display = 'block';
                     return;
                 }
                 continueEmpty.style.display = 'none';
-                continueHistory.forEach((game, index) => {
-                    const tile = createGameTile(game);
-                    tile.style.animationDelay = (index * 30) + 'ms';
+                displayHistory.forEach((game, index) => {
+                    const tile = createGameTile(game, index);
                     continueGrid.appendChild(tile);
                 });
             }
 
             function renderAll() {
-                renderAllGames();
+                renderAllGames(true);
                 renderFavorites();
                 renderContinue();
             }
@@ -390,9 +449,10 @@
                         g.name.toLowerCase().includes(query)
                     );
                 }
+                // Reset pagination when searching
                 currentPage = 0;
-                renderAllGames();
-                // Hide favorites/continue when searching
+                totalLoaded = 0;
+                renderAllGames(true);
                 document.getElementById('favoritesSubSection').style.display = query ? 'none' : 'block';
                 document.getElementById('continueSubSection').style.display = query ? 'none' : 'block';
             });
@@ -410,10 +470,12 @@
                 gameScreen.classList.add('active');
                 mainContent.classList.add('compacted');
 
-                // Add to continue history
+                // Add to continue history with 8 game cap
                 continueHistory = continueHistory.filter(g => g.url !== game.url);
                 continueHistory.unshift({ name: game.name, url: game.url });
-                if (continueHistory.length > 20) continueHistory.pop();
+                if (continueHistory.length > MAX_CONTINUE) {
+                    continueHistory = continueHistory.slice(0, MAX_CONTINUE);
+                }
                 setStorage('continue', continueHistory);
                 renderContinue();
 
