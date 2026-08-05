@@ -39,7 +39,7 @@
     <main class="main-content" id="mainContent">
         <!-- GAMES SECTION -->
         <div id="gamesSection" class="section-page active">
-            <div class="credit-text">Made by Aiden</div>
+            <div class="credit-text games-credit">Made by Aiden</div>
             <div class="section-title">
                 <i class="fa-solid fa-gamepad"></i>
                 <span>Games</span>
@@ -80,15 +80,14 @@
             </div>
         </div>
 
-        <!-- SEARCH SECTION (full page iframe) -->
+        <!-- SEARCH SECTION (iframe removed) -->
         <div id="searchSection" class="section-page">
-            <div class="credit-text">Made by Aiden</div>
-            <div class="search-iframe-container" id="searchIframeContainer">
-                <div id="searchSpinner" class="spinner-overlay">
-                    <div class="spinner"></div>
-                    <p>Loading proxy...</p>
-                </div>
-                <iframe id="searchIframe" src="https://s3.amazonaws.com/deaganfern/index.html" title="Proxy" allowfullscreen></iframe>
+            <div class="section-title">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+            </div>
+            <div class="search-placeholder">
+                <p>Search functionality has been removed.</p>
             </div>
         </div>
     </main>
@@ -198,8 +197,6 @@
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const backBtn = document.getElementById('backBtn');
             const gameSpinner = document.getElementById('gameSpinner');
-            const searchSpinner = document.getElementById('searchSpinner');
-            const searchIframe = document.getElementById('searchIframe');
             const gamesSection = document.getElementById('gamesSection');
             const searchSection = document.getElementById('searchSection');
             const gamesNavBtn = document.getElementById('gamesNavBtn');
@@ -248,10 +245,6 @@
             // ---------- IFRAME LOADING ----------
             gameIframe.addEventListener('load', function() {
                 hideSpinner(gameSpinner);
-            });
-
-            searchIframe.addEventListener('load', function() {
-                hideSpinner(searchSpinner);
             });
 
             // ---------- CREATE GAME TILE ----------
