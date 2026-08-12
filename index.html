@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>MONO</title>
   
-    <link rel="icon" type="image/jpeg" href="https://static.vecteezy.com/system/resources/previews/076/316/072/large_2x/vibrant-purple-logo-with-star-and-rocket-vector.jpg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="https://static.vecteezy.com/system/resources/previews/076/316/072/large_2x/vibrant-purple-logo-with-star-and-rocket-vector.jpg" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
     <!-- ===== PRIVATE SCREEN ===== -->
     <div id="privateScreen" class="private-screen">
         <i class="fa-solid fa-lock padlock-icon"></i>
@@ -210,13 +209,27 @@
             let keySequence = [];
             const requiredSequence = ['ArrowLeft', 'ArrowUp', 'ArrowUp', 'ArrowDown'];
 
-            function grantAccess() {
+            const ACCESS_KEY = "SofDjds2i12qj";
+            const ACCESS_KEY_ALT = "oLfak1idma8InB";
+
+            function grantAccess(welcomeMsg) {
                 isAuthorized = true;
                 privateScreen.classList.add('hidden');
+                document.querySelector('#welcomeScreen h1').textContent = welcomeMsg;
                 welcomeScreen.classList.add('active');
                 setTimeout(() => {
                     welcomeScreen.classList.remove('active');
                 }, 2000);
+            }
+
+            function promptAccessKey(callback) {
+                const key = prompt("Enter Access Key String:");
+                if (key === ACCESS_KEY || key === ACCESS_KEY_ALT) {
+                    const welcomeMsg = (key === ACCESS_KEY) ? "Welcome back, Aiden." : "Welcome back, Sam.";
+                    callback(welcomeMsg);
+                } else {
+                    location.reload();
+                }
             }
 
             document.addEventListener('keydown', function(e) {
@@ -225,7 +238,9 @@
                 if (keySequence.length > requiredSequence.length) keySequence.shift();
                 if (keySequence.length === requiredSequence.length) {
                     if (requiredSequence.every((key, i) => keySequence[i] === key)) {
-                        grantAccess();
+                        promptAccessKey(function(welcomeMsg) {
+                            grantAccess(welcomeMsg);
+                        });
                     }
                 }
             });
