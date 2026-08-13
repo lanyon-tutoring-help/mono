@@ -72,10 +72,6 @@
                     <span>All Games</span>
                 </div>
                 <div class="games-grid" id="gamesGrid"></div>
-                <div class="pagination-controls" id="paginationControls">
-                    <button id="loadMoreBtn" class="pagination-btn">Load More</button>
-                    <button id="showLessBtn" class="pagination-btn hidden">Show Less</button>
-                </div>
             </div>
         </div>
 
@@ -115,12 +111,12 @@
         (function() {
             // ---------- DATA ----------
             const DEFAULT_GAMES = [
-                { name: "Chess", url: "https://lichess.org/embed/board?theme=auto&bg=auto" },
-                { name: "Snake", url: "https://www.google.com/logos/fnbx/snake_game/play.html" },
-                { name: "Pacman", url: "https://www.google.com/logos/2010/pacman10-i.html" },
-                { name: "Tetris", url: "https://tetris.com/play-tetris" },
-                { name: "Solitaire", url: "https://worldofsolitaire.com/" },
-                { name: "Minesweeper", url: "https://minesweeper.online/" }
+                { name: "Chess", url: "https://lichess.org/embed/board?theme=auto&bg=auto", category: "Strategy", description: "Classic board game of strategic thinking" },
+                { name: "Snake", url: "https://www.google.com/logos/fnbx/snake_game/play.html", category: "Arcade", description: "Eat food and grow without hitting walls" },
+                { name: "Pacman", url: "https://www.google.com/logos/2010/pacman10-i.html", category: "Arcade", description: "Navigate mazes and avoid ghosts" },
+                { name: "Tetris", url: "https://tetris.com/play-tetris", category: "Puzzle", description: "Stack falling blocks to clear lines" },
+                { name: "Solitaire", url: "https://worldofsolitaire.com/", category: "Card", description: "Classic card game of strategy and patience" },
+                { name: "Minesweeper", url: "https://minesweeper.online/", category: "Puzzle", description: "Clear the board without hitting mines" }
             ];
 
             function extractGamesList() {
@@ -147,7 +143,9 @@
                 return rawList.map(function(game) {
                     return {
                         name: game.name || game.title || 'Untitled Game',
-                        url: game.url || ''
+                        url: game.url || '',
+                        category: game.category || 'Uncategorized',
+                        description: game.description || 'No description available'
                     };
                 });
             }
@@ -173,11 +171,7 @@
             let favorites = getStorage('favorites', []);
             let continueHistory = getStorage('continue', []);
             let currentGame = null;
-            let currentPage = 0;
-            let totalLoaded = 0;
-            const PAGE_SIZE = 100;
             const MAX_CONTINUE = 8;
-            let isLoadingMore = false;
 
             // ---------- DOM REFS ----------
             const gamesGrid = document.getElementById('gamesGrid');
@@ -201,8 +195,6 @@
             const gameSearchBar = document.getElementById('gameSearchBar');
             const privateScreen = document.getElementById('privateScreen');
             const welcomeScreen = document.getElementById('welcomeScreen');
-            const loadMoreBtn = document.getElementById('loadMoreBtn');
-            const showLessBtn = document.getElementById('showLessBtn');
 
             // ---------- ACCESS CONTROL ----------
             let isAuthorized = false;
@@ -259,8 +251,35 @@
                 hideSpinner(gameSpinner);
             });
 
+            // ---------- HELPER: Get full game data ----------
+            function getFullGameData(game) {
+                // Try to find the game in allGames by URL first, then by name
+                let fullGame = allGames.find(g => g.url === game.url);
+                if (!fullGame) {
+                    fullGame = allGames.find(g => g.name === game.name);
+                }
+                if (fullGame) {
+                    return {
+                        name: fullGame.name,
+                        url: fullGame.url,
+                        category: fullGame.category || 'Uncategorized',
+                        description: fullGame.description || 'No description available'
+                    };
+                }
+                // Fallback: return the game with defaults
+                return {
+                    name: game.name || 'Untitled Game',
+                    url: game.url || '',
+                    category: game.category || 'Uncategorized',
+                    description: game.description || 'No description available'
+                };
+            }
+
             // ---------- CREATE GAME TILE ----------
             function createGameTile(game, index) {
+                // Ensure game has all required fields
+                const fullGame = getFullGameData(game);
+                
                 const tile = document.createElement('div');
                 tile.className = 'game-tile slide-in';
                 tile.style.animationDelay = (index * 15) + 'ms';
@@ -268,23 +287,42 @@
                 // Favorite button (top-left, smaller)
                 const favBtn = document.createElement('button');
                 favBtn.className = 'tile-fav-btn';
-                const isFaved = favorites.some(g => g.url === game.url);
+                const isFaved = favorites.some(g => g.url === fullGame.url);
                 favBtn.innerHTML = isFaved ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
                 favBtn.title = isFaved ? 'Remove from favorites' : 'Add to favorites';
                 favBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    toggleFavorite(game);
+                    toggleFavorite(fullGame);
                 });
                 tile.appendChild(favBtn);
+
+                // Game info container
+                const infoContainer = document.createElement('div');
+                infoContainer.className = 'tile-info';
 
                 // Game name
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'game-title-text';
-                titleSpan.textContent = game.name;
-                tile.appendChild(titleSpan);
+                titleSpan.textContent = fullGame.name;
+                infoContainer.appendChild(titleSpan);
+
+                // Category tag
+                const categorySpan = document.createElement('span');
+                categorySpan.className = 'game-category';
+                categorySpan.textContent = fullGame.category;
+                categorySpan.setAttribute('data-category', fullGame.category);
+                infoContainer.appendChild(categorySpan);
+
+                // Description
+                const descSpan = document.createElement('span');
+                descSpan.className = 'game-description';
+                descSpan.textContent = fullGame.description;
+                infoContainer.appendChild(descSpan);
+
+                tile.appendChild(infoContainer);
 
                 tile.addEventListener('click', function() {
-                    openGameScreen(game);
+                    openGameScreen(fullGame);
                 });
 
                 return tile;
@@ -292,11 +330,17 @@
 
             // ---------- TOGGLE FAVORITE ----------
             function toggleFavorite(game) {
-                const idx = favorites.findIndex(g => g.url === game.url);
+                const fullGame = getFullGameData(game);
+                const idx = favorites.findIndex(g => g.url === fullGame.url);
                 if (idx > -1) {
                     favorites.splice(idx, 1);
                 } else {
-                    favorites.push({ name: game.name, url: game.url });
+                    favorites.push({ 
+                        name: fullGame.name, 
+                        url: fullGame.url, 
+                        category: fullGame.category, 
+                        description: fullGame.description 
+                    });
                 }
                 setStorage('favorites', favorites);
                 renderFavorites();
@@ -321,101 +365,25 @@
                 });
             }
 
-            // ---------- PAGINATION ----------
-            function getPageGames(page) {
-                const start = page * PAGE_SIZE;
-                const end = start + PAGE_SIZE;
-                return filteredGames.slice(start, end);
-            }
-
-            function renderAllGames(reset = true) {
-                if (reset) {
-                    gamesGrid.innerHTML = '';
-                    totalLoaded = 0;
-                    currentPage = 0;
-                }
-
-                const pageGames = getPageGames(currentPage);
+            // ---------- RENDER FUNCTIONS ----------
+            function renderAllGames() {
+                gamesGrid.innerHTML = '';
                 
-                if (pageGames.length === 0 && totalLoaded === 0) {
+                if (filteredGames.length === 0) {
                     gamesGrid.innerHTML = '<p class="empty-message">No games found.</p>';
-                    loadMoreBtn.classList.add('hidden');
-                    showLessBtn.classList.add('hidden');
                     return;
                 }
 
                 requestAnimationFrame(() => {
                     const fragment = document.createDocumentFragment();
-                    pageGames.forEach((game, index) => {
-                        const tile = createGameTile(game, totalLoaded + index);
+                    filteredGames.forEach((game, index) => {
+                        const tile = createGameTile(game, index);
                         fragment.appendChild(tile);
                     });
                     gamesGrid.appendChild(fragment);
                 });
-
-                totalLoaded += pageGames.length;
-
-                const totalGames = filteredGames.length;
-                const totalPages = Math.ceil(totalGames / PAGE_SIZE);
-                
-                if (totalLoaded >= totalGames) {
-                    loadMoreBtn.classList.add('hidden');
-                } else {
-                    loadMoreBtn.classList.remove('hidden');
-                }
-                
-                showLessBtn.classList.toggle('hidden', totalLoaded <= PAGE_SIZE);
-                isLoadingMore = false;
             }
 
-            function loadMore() {
-                if (isLoadingMore) return;
-                if (totalLoaded < filteredGames.length) {
-                    isLoadingMore = true;
-                    currentPage++;
-                    renderAllGames(false);
-                    setTimeout(() => {
-                        const lastTile = gamesGrid.lastElementChild;
-                        if (lastTile) {
-                            lastTile.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        }
-                    }, 50);
-                }
-            }
-
-            function showLess() {
-                if (totalLoaded > PAGE_SIZE) {
-                    const tiles = gamesGrid.querySelectorAll('.game-tile');
-                    const toRemove = Math.min(PAGE_SIZE, tiles.length);
-                    
-                    for (let i = tiles.length - 1; i >= tiles.length - toRemove; i--) {
-                        if (tiles[i]) {
-                            tiles[i].classList.add('slide-out');
-                        }
-                    }
-                    
-                    setTimeout(() => {
-                        for (let i = tiles.length - 1; i >= tiles.length - toRemove; i--) {
-                            if (tiles[i]) {
-                                tiles[i].remove();
-                            }
-                        }
-                        totalLoaded -= toRemove;
-                        currentPage--;
-                        
-                        const totalGames = filteredGames.length;
-                        if (totalLoaded < totalGames) {
-                            loadMoreBtn.classList.remove('hidden');
-                        }
-                        showLessBtn.classList.toggle('hidden', totalLoaded <= PAGE_SIZE);
-                    }, 300);
-                }
-            }
-
-            loadMoreBtn.addEventListener('click', loadMore);
-            showLessBtn.addEventListener('click', showLess);
-
-            // ---------- RENDER FUNCTIONS ----------
             function renderFavorites() {
                 favoritesGrid.innerHTML = '';
                 if (favorites.length === 0) {
@@ -453,7 +421,7 @@
             }
 
             function renderAll() {
-                renderAllGames(true);
+                renderAllGames();
                 renderFavorites();
                 renderContinue();
             }
@@ -465,12 +433,12 @@
                     filteredGames = [...allGames];
                 } else {
                     filteredGames = allGames.filter(g => 
-                        g.name.toLowerCase().includes(query)
+                        g.name.toLowerCase().includes(query) ||
+                        g.category.toLowerCase().includes(query) ||
+                        g.description.toLowerCase().includes(query)
                     );
                 }
-                currentPage = 0;
-                totalLoaded = 0;
-                renderAllGames(true);
+                renderAllGames();
                 document.getElementById('favoritesSubSection').style.display = query ? 'none' : 'block';
                 document.getElementById('continueSubSection').style.display = query ? 'none' : 'block';
             });
@@ -481,15 +449,21 @@
                     alert('This game has no valid link.');
                     return;
                 }
-                currentGame = game;
-                gameTitle.textContent = game.name;
+                const fullGame = getFullGameData(game);
+                currentGame = fullGame;
+                gameTitle.textContent = fullGame.name;
                 showSpinner(gameSpinner);
-                gameIframe.src = game.url;
+                gameIframe.src = fullGame.url;
                 gameScreen.classList.add('active');
                 document.body.style.overflow = 'hidden';
 
-                continueHistory = continueHistory.filter(g => g.url !== game.url);
-                continueHistory.unshift({ name: game.name, url: game.url });
+                continueHistory = continueHistory.filter(g => g.url !== fullGame.url);
+                continueHistory.unshift({ 
+                    name: fullGame.name, 
+                    url: fullGame.url, 
+                    category: fullGame.category,
+                    description: fullGame.description
+                });
                 if (continueHistory.length > MAX_CONTINUE) {
                     continueHistory = continueHistory.slice(0, MAX_CONTINUE);
                 }
@@ -497,7 +471,7 @@
                 renderContinue();
 
                 setTimeout(() => {
-                    gameIframe.src = game.url;
+                    gameIframe.src = fullGame.url;
                 }, 20);
             }
 
@@ -582,14 +556,35 @@
             });
 
             // ---------- INIT ----------
+            // Migrate old data to include category and description
+            continueHistory = continueHistory.map(function(game) {
+                const fullGame = getFullGameData(game);
+                return {
+                    name: fullGame.name,
+                    url: fullGame.url,
+                    category: fullGame.category,
+                    description: fullGame.description
+                };
+            });
+            setStorage('continue', continueHistory);
+
+            favorites = favorites.map(function(game) {
+                const fullGame = getFullGameData(game);
+                return {
+                    name: fullGame.name,
+                    url: fullGame.url,
+                    category: fullGame.category,
+                    description: fullGame.description
+                };
+            });
+            setStorage('favorites', favorites);
+
             renderAll();
             showSection('games');
 
             // Expose for debugging
             window.openGameScreen = openGameScreen;
             window.closeGameScreen = closeGameScreen;
-            window.loadMore = loadMore;
-            window.showLess = showLess;
 
         })();
     </script>
