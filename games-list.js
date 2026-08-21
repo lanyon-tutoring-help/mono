@@ -1,4 +1,5 @@
 const GamesData = [
+  { name: "Pink Bike", url: "https://unblocked-games-g.gitlab.io/pinkbike/", category: "Action", description: "Do stunts and rise around hard tracks in pinkbike." },
   { name: "Survival Race", url: "https://rycellgames.github.io/raw/games/racesurvival/index.html", category: "Vehicle", description: "Race through traffic in this high-speed driving challenge." },
   { name: "Geometry Dash", url: "https://web-dashers.github.io", category: "Action", description: "Jump through rhythm-based obstacle courses." },
   { name: "Tung Sahur Horror", url: "https://lanyon-tutoring-help.github.io/tung-sahur-horror", category: "Horror", description: "Survive terrifying encounters in this horror challenge." },
