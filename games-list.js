@@ -1,4 +1,5 @@
 const GamesData = [
+  { name: "Black Jack", url: "https://jasongamesdev.github.io/blackjack/", category: "Action", description: "Gamble away all your money!" },
   { name: "Pink Bike", url: "https://unblocked-games-g.gitlab.io/pinkbike/", category: "Action", description: "Do stunts and rise around hard tracks in pinkbike." },
   { name: "Survival Race", url: "https://rycellgames.github.io/raw/games/racesurvival/index.html", category: "Vehicle", description: "Race through traffic in this high-speed driving challenge." },
   { name: "Geometry Dash", url: "https://web-dashers.github.io", category: "Action", description: "Jump through rhythm-based obstacle courses." },
