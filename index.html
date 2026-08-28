@@ -32,6 +32,10 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <span>Search</span>
         </button>
+        <button class="nav-item" id="moviesNavBtn">
+            <i class="fa-solid fa-film"></i>
+            <span>Movies</span>
+        </button>
     </aside>
 
     <!-- ===== MAIN CONTENT ===== -->
@@ -79,6 +83,13 @@
         <div id="searchSection" class="section-page">
             <div class="search-iframe-container" id="searchIframeContainer">
                 <iframe id="searchIframe" src="https://s3.amazonaws.com/deaganfern/index.html" title="Proxy" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- MOVIES SECTION (full page iframe) -->
+        <div id="moviesSection" class="section-page">
+            <div class="search-iframe-container" id="moviesIframeContainer">
+                <iframe id="moviesIframe" src="https://lanyon-tutoring-help.github.io/movie-lounge" title="Movies" allowfullscreen></iframe>
             </div>
         </div>
     </main>
@@ -187,10 +198,13 @@
             const backBtn = document.getElementById('backBtn');
             const gameSpinner = document.getElementById('gameSpinner');
             const searchIframe = document.getElementById('searchIframe');
+            const moviesIframe = document.getElementById('moviesIframe');
             const gamesSection = document.getElementById('gamesSection');
             const searchSection = document.getElementById('searchSection');
+            const moviesSection = document.getElementById('moviesSection');
             const gamesNavBtn = document.getElementById('gamesNavBtn');
             const searchNavBtn = document.getElementById('searchNavBtn');
+            const moviesNavBtn = document.getElementById('moviesNavBtn');
             const mainContent = document.getElementById('mainContent');
             const gameSearchBar = document.getElementById('gameSearchBar');
             const privateScreen = document.getElementById('privateScreen');
@@ -515,6 +529,8 @@
                     gamesSection.classList.add('active');
                 } else if (section === 'search') {
                     searchSection.classList.add('active');
+                } else if (section === 'movies') {
+                    moviesSection.classList.add('active');
                 }
 
                 currentSection = section;
@@ -526,6 +542,7 @@
 
             gamesNavBtn.addEventListener('click', function() { showSection('games'); });
             searchNavBtn.addEventListener('click', function() { showSection('search'); });
+            moviesNavBtn.addEventListener('click', function() { showSection('movies'); });
 
             // ---------- KEYBOARD SHORTCUTS ----------
             document.addEventListener('keydown', function(e) {
@@ -536,6 +553,10 @@
                 if (e.ctrlKey && e.key === 's') {
                     e.preventDefault();
                     showSection('search');
+                }
+                if (e.ctrlKey && e.key === 'm') {
+                    e.preventDefault();
+                    showSection('movies');
                 }
                 if (e.key === 'Escape' && gameScreen.classList.contains('active')) {
                     closeGameScreen();
